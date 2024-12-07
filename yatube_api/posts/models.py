@@ -4,6 +4,10 @@ from django.db import models
 User = get_user_model()
 
 
+class Foloow(models.Model):
+    pass
+
+
 class Post(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
