@@ -3,7 +3,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.relations import SlugRelatedField
 from rest_framework.serializers import ModelSerializer
 
-from posts.models import Comment, Group, Post
+from posts.models import Comment, Group, Post, Follow
 
 User = get_user_model()
 
@@ -37,34 +37,33 @@ class CommentSerializer(ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
-        fields = (
-            'author',
-            'post',
-            'text',
-            'created',
-        )
+        fields = ('id', 'author', 'post', 'text', 'created',)
+        read_only_fields = ('id', 'author', 'post', 'created',)
         model = Comment
 
 
-# class FollowSerializer(ModelSerializer):
-#     """Сериализатор модели Follow."""
+class GroupSerializer(ModelSerializer):
+    """Сериализатор модели Group."""
 
-#     user = SlugRelatedField(slug_field='username', read_only=True)
-#     following = SlugRelatedField(slug_field='username', queryset=User.objects.all(), required=True)
+    class Meta:
+        fields = ('id', 'title', 'slug', 'description',)
+        model = Group
 
-#     class Meta:
-#         fields = (
-#             'user',
-#             'following',
-#         )
-#         model = Follow
 
-#     def validate_following(self, value):
-#         if value == self.context['request'].user:
-#             raise ValidationError("Нельзя подписаться на самого себя.")
-#         return value
+class FollowSerializer(ModelSerializer):
+    user = SlugRelatedField(slug_field='username', read_only=True)
+    following = SlugRelatedField(slug_field='username', queryset=User.objects.all())
 
-#     def create(self, validated_data):
-#         user = self.context['request'].user
-#         following = validated_data['following']
-#         return Follow.objects.create(user=user, following=following)
+    class Meta:
+        model = Follow
+        fields = ('user', 'following')
+
+    def validate_following(self, value):
+        if value == self.context['request'].user:
+            raise ValidationError("Нельзя подписаться на самого себя.")
+        return value
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        following = validated_data['following']
+        return Follow.objects.create(user=user, following=following)
