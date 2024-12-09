@@ -1,9 +1,11 @@
+"""Сериализаторы для API."""
+
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
 from rest_framework.relations import SlugRelatedField
 from rest_framework.serializers import ModelSerializer
 
-from posts.models import Comment, Group, Post, Follow
+from posts.models import Comment, Follow, Group, Post
 
 User = get_user_model()
 
@@ -37,8 +39,19 @@ class CommentSerializer(ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
-        fields = ('id', 'author', 'post', 'text', 'created',)
-        read_only_fields = ('id', 'author', 'post', 'created',)
+        fields = (
+            'id',
+            'author',
+            'post',
+            'text',
+            'created',
+        )
+        read_only_fields = (
+            'id',
+            'author',
+            'post',
+            'created',
+        )
         model = Comment
 
 
@@ -46,24 +59,29 @@ class GroupSerializer(ModelSerializer):
     """Сериализатор модели Group."""
 
     class Meta:
-        fields = ('id', 'title', 'slug', 'description',)
+        fields = (
+            'id',
+            'title',
+            'slug',
+            'description',
+        )
         model = Group
 
 
 class FollowSerializer(ModelSerializer):
     user = SlugRelatedField(slug_field='username', read_only=True)
-    following = SlugRelatedField(slug_field='username', queryset=User.objects.all())
+    following = SlugRelatedField(
+        slug_field='username', queryset=User.objects.all()
+    )
 
     class Meta:
         model = Follow
         fields = ('user', 'following')
 
     def validate_following(self, value):
-        if value == self.context['request'].user:
+        request_user = self.context['request'].user
+        if value == request_user:
             raise ValidationError("Нельзя подписаться на самого себя.")
+        if Follow.objects.filter(user=request_user, following=value).exists():
+            raise ValidationError("Вы уже подписаны на этого пользователя.")
         return value
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        following = validated_data['following']
-        return Follow.objects.create(user=user, following=following)
