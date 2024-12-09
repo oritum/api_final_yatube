@@ -1,7 +1,24 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from posts.constants import SLUG_MAX_LENGTH, TITLLE_MAX_LENGTH
+
 User = get_user_model()
+
+
+class Group(models.Model):
+    """Модель сообщества."""
+
+    title = models.CharField(
+        'Название сообщества', max_length=TITLLE_MAX_LENGTH
+    )
+    description = models.TextField('Описание сообщества')
+    slug = models.SlugField(
+        'Идентификатор сообщества', max_length=SLUG_MAX_LENGTH, unique=True
+    )
+
+    def __str__(self):
+        return self.title
 
 
 class Post(models.Model):
@@ -17,6 +34,14 @@ class Post(models.Model):
     )
     image = models.ImageField(
         upload_to='posts/', null=True, blank=True, verbose_name='Изображение'
+    )
+    group = models.ForeignKey(
+        Group,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='posts',
+        verbose_name='Cообщество',
     )
 
     def __str__(self):
@@ -66,6 +91,3 @@ class Follow(models.Model):
     def __str__(self):
         return f'{self.user} подписан на {self.following}'
 
-
-class Group(models.Model):
-    pass

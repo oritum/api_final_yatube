@@ -10,6 +10,7 @@ click==8.1.7
 cryptography==44.0.0
 defusedxml==0.8.0rc2
 Django==3.2.16
+django-cors-headers==3.14.0
 djangorestframework==3.12.4
 djangorestframework-simplejwt==5.3.1
 djoser==2.3.1
