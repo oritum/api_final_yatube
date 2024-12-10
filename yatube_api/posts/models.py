@@ -1,7 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from posts.constants import SLUG_MAX_LENGTH, TITLLE_MAX_LENGTH
+from posts.constants import (
+    SLUG_MAX_LENGTH,
+    TEXT_PREVIEW_LENGTH,
+    TITLLE_MAX_LENGTH,
+)
 
 User = get_user_model()
 
@@ -45,7 +49,7 @@ class Post(models.Model):
     )
 
     def __str__(self):
-        return self.text
+        return self.text[:TEXT_PREVIEW_LENGTH]
 
 
 class Comment(models.Model):
@@ -69,7 +73,7 @@ class Comment(models.Model):
     )
 
     def __str__(self):
-        return self.text
+        return self.text[:TEXT_PREVIEW_LENGTH]
 
 
 class Follow(models.Model):
@@ -89,7 +93,15 @@ class Follow(models.Model):
     )
 
     class Meta:
-        unique_together = ('user', 'following')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'following'], name='unique_follow'
+            ),
+            models.CheckConstraint(
+                check=~models.Q(user=models.F('following')),
+                name='prevent_self_follow',
+            )
+        ]
 
     def __str__(self):
         return f'{self.user} подписан на {self.following}'
