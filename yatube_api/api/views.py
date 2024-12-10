@@ -1,10 +1,7 @@
 """Views для API."""
 
-from typing import Optional
-
 from rest_framework.filters import SearchFilter
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import GenericViewSet, ReadOnlyModelViewSet
@@ -24,7 +21,6 @@ class PostViewSet(BaseModelViewSet):
 
     queryset = Post.objects.select_related('author', 'group').all()
     serializer_class = PostSerializer
-    pagination_class = LimitOffsetPagination
 
 
 class CommentViewSet(BaseModelViewSet):
@@ -32,9 +28,8 @@ class CommentViewSet(BaseModelViewSet):
 
     serializer_class = CommentSerializer
 
-    def get_post_id(self) -> Optional[int]:
-        post_id = self.kwargs.get('post_id')
-        return int(post_id) if post_id is not None else None
+    def get_post_id(self) -> int:
+        return self.kwargs.get('post_id')
 
     def get_queryset(self):
         return Comment.objects.filter(
