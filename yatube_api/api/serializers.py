@@ -1,6 +1,5 @@
 """Сериализаторы для API."""
 
-from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
 from rest_framework.relations import SlugRelatedField
 from rest_framework.serializers import ModelSerializer
