@@ -1,5 +1,6 @@
 """Views для API."""
 
+from django.shortcuts import get_object_or_404
 from rest_framework.filters import SearchFilter
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -39,7 +40,7 @@ class CommentViewSet(BaseModelViewSet):
     def perform_create(self, serializer: BaseSerializer) -> None:
         serializer.save(
             author=self.request.user,
-            post=Post.objects.get(id=self.get_post_id()),
+            post=get_object_or_404(Post, id=self.get_post_id()),
         )
 
 
